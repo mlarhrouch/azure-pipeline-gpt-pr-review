@@ -1,4 +1,5 @@
-# Review Azure Devops Pull Requests using OpenAi GPT model
+# Use OpenAI GPT model to review Pull Requests for Azure Devops
+A task for Azure DevOps build pipelines to add GPT as PR reviewer
 
 ## Installation
 

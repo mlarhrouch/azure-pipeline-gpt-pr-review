@@ -102,3 +102,11 @@ dist
 
 # TernJS port file
 .tern-port
+
+.taskkey
+
+**/.DS_Store
+
+*.vsix
+
+*.js
