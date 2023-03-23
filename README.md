@@ -13,7 +13,9 @@ Add the tasks to your build definition.
 
 ### Give permission to the build service agent
 
-before use this task, make sure that the build service has permissions to contribute to pull requests in your repository
+before use this task, make sure that the build service has permissions to contribute to pull requests in your repository :
+
+![contribute_to_pr](https://github.com/mlarhrouch/azure-pipeline-gpt-pr-review/blob/main/images/contribute_to_pr.png?raw=true)
 
 ### Allow Task to access the system token
 
@@ -29,7 +31,9 @@ steps:
 
 #### Classic editors 
 
-Enable the option "Allow scripts to access the OAuth token" in the "Agent job" properties
+Enable the option "Allow scripts to access the OAuth token" in the "Agent job" properties :
+
+![allow_access_token](https://github.com/mlarhrouch/azure-pipeline-gpt-pr-review/blob/main/images/allow_access_token.png?raw=true)
 
 ## Contributions
 
