@@ -21,9 +21,11 @@ before use this task, make sure that the build service has permissions to contri
 
 Add a checkout section with persistCredentials set to true.
 
+```yaml
 steps:
 - checkout: self
   persistCredentials: true
+```
 
 #### Classic editors 
 
