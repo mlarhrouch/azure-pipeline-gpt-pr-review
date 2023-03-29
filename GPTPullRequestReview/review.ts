@@ -1,6 +1,7 @@
 import tl = require('azure-pipelines-task-lib/task');
 import fetch = require('node-fetch');
 import simpleGit = require('simple-git');
+import binaryExtensions = require('binary-extensions');
 
 const completionUri = "https://api.openai.com/v1/chat/completions";
 
@@ -50,10 +51,12 @@ async function GetChangedFiles(targetBranch: string) {
   await git.fetch()
 
   const diffs = await git.diff([targetBranch, '--name-only']);
+  const files = diffs.split('\n').filter(line => line.trim().length > 0);
+  const nonBinaryfiles = files.filter(file => !binaryExtensions.includes(getFileExtension(file)));
 
-  console.log(`Changed Files : \n ${diffs}`);
+  console.log(`Changed Files (excluding binary files) : \n ${nonBinaryfiles.join('\n')}`);
 
-  return diffs.split('\n').filter(line => line.trim().length > 0);
+  return nonBinaryfiles;
 }
 
 async function reviewFile(fileName: string) {
@@ -95,10 +98,14 @@ async function reviewFile(fileName: string) {
   });
 
   const gptFeedback = await response.json() as any;
-  const review = gptFeedback.choices[0].message.content as string
+  const choices = gptFeedback.choices
 
-  if (!review.includes("No feedback.")) {
-    await AddCommentToPR(fileName, review);
+  if (choices && choices.length > 0) {
+    const review = choices[0].message.content as string
+
+    if (!review.includes("No feedback.")) {
+      await AddCommentToPR(fileName, review);
+    }
   }
 
   console.log(`Review of ${fileName} completed.`);
@@ -175,6 +182,10 @@ function getCollectionName(collectionUri: string) {
   else {
     return collectionUriWithoutProtocol.split('/')[1];
   }
+}
+
+function getFileExtension(fileName: string) {
+  return fileName.slice((fileName.lastIndexOf(".") - 1 >>> 0) + 2);
 }
 
 run();
