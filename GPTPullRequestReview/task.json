@@ -13,7 +13,7 @@
   "version": {
     "Major": "0",
     "Minor": "5",
-    "Patch": "30"
+    "Patch": "32"
   },
   "minimumAgentVersion": "1.95.0",
   "instanceNameFormat": "GPTPullRequestReview $(message)",
