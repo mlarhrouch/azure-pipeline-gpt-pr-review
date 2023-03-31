@@ -47,8 +47,9 @@ async function run() {
 }
 
 async function GetChangedFiles(targetBranch: string) {
-  await git.addConfig('core.pager', 'cat')
-  await git.fetch()
+  await git.addConfig('core.pager', 'cat');
+  await git.addConfig('core.quotepath', 'false');
+  await git.fetch();
 
   const diffs = await git.diff([targetBranch, '--name-only']);
   const files = diffs.split('\n').filter(line => line.trim().length > 0);
