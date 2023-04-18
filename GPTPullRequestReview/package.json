@@ -13,7 +13,8 @@
     "azure-pipelines-task-lib": "^4.3.1",
     "binary-extensions": "^2.2.0",
     "node-fetch": "^2.6.6",
-    "simple-git": "^3.17.0"
+    "simple-git": "^3.17.0",
+    "openai": "^3.2.1"
   },
   "devDependencies": {
     "@types/node": "^18.15.3",
