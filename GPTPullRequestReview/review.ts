@@ -89,7 +89,7 @@ async function reviewFile(fileName: string) {
     const response = await openai.createCompletion({
       model: "text-davinci-003",
       prompt: prompt,
-      max_tokens: 2000
+      max_tokens: 500
     });
 
     const choices = response.data.choices
