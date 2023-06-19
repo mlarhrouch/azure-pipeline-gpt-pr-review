@@ -3,6 +3,7 @@ import fetch = require('node-fetch');
 import simpleGit = require('simple-git');
 import binaryExtensions = require('binary-extensions');
 const { Configuration, OpenAIApi } = require("openai");
+const https = require("https");
 
 const gitOptions: Partial<simpleGit.SimpleGitOptions> = {
   baseDir: `${tl.getVariable('System.DefaultWorkingDirectory')}`,
@@ -12,6 +13,7 @@ const gitOptions: Partial<simpleGit.SimpleGitOptions> = {
 let openai: any;
 let git: simpleGit.SimpleGit;
 let targetBranch: string;
+let httpsAgent: any;
 
 async function run() {
   try {
@@ -21,6 +23,7 @@ async function run() {
     }
 
     const apiKey = tl.getInput('api_key', true);
+    const supportSelfSignedCertificate = tl.getBoolInput('support_self_signed_certificate');
 
     if (apiKey == undefined) {
       tl.setResult(tl.TaskResult.Failed, 'No Api Key provided!');
@@ -33,8 +36,12 @@ async function run() {
     
     openai = new OpenAIApi(openAiConfiguration);
 
+    httpsAgent = new https.Agent({
+      rejectUnauthorized: !supportSelfSignedCertificate
+    });
+
     git = simpleGit.simpleGit(gitOptions);
-    targetBranch = `origin/${tl.getVariable('System.PullRequest.TargetBranchName')}`;
+    targetBranch = getTargetBranchName();
 
     const filesNames = await GetChangedFiles(targetBranch);
 
@@ -134,7 +141,8 @@ async function AddCommentToPR(fileName: string, comment: string) {
   await fetch.default(prUrl, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${tl.getVariable('SYSTEM.ACCESSTOKEN')}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
+    agent: httpsAgent
   });
 
   console.log(`New comment added.`);
@@ -146,6 +154,7 @@ async function DeleteExistingComments() {
   const threadsUrl = `${tl.getVariable('SYSTEM.TEAMFOUNDATIONCOLLECTIONURI')}${tl.getVariable('SYSTEM.TEAMPROJECTID')}/_apis/git/repositories/${tl.getVariable('Build.Repository.Name')}/pullRequests/${tl.getVariable('System.PullRequest.PullRequestId')}/threads?api-version=5.1`;
   const threadsResponse = await fetch.default(threadsUrl, {
     headers: { Authorization: `Bearer ${tl.getVariable('SYSTEM.ACCESSTOKEN')}` },
+    agent: httpsAgent
   });
 
   const threads = await threadsResponse.json() as { value: [] };
@@ -159,6 +168,7 @@ async function DeleteExistingComments() {
     const commentsUrl = `${tl.getVariable('SYSTEM.TEAMFOUNDATIONCOLLECTIONURI')}${tl.getVariable('SYSTEM.TEAMPROJECTID')}/_apis/git/repositories/${tl.getVariable('Build.Repository.Name')}/pullRequests/${tl.getVariable('System.PullRequest.PullRequestId')}/threads/${thread.id}/comments?api-version=5.1`;
     const commentsResponse = await fetch.default(commentsUrl, {
       headers: { Authorization: `Bearer ${tl.getVariable('SYSTEM.ACCESSTOKEN')}` },
+      agent: httpsAgent
     });
 
     const comments = await commentsResponse.json() as { value: [] };
@@ -169,6 +179,7 @@ async function DeleteExistingComments() {
       await fetch.default(removeCommentUrl, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${tl.getVariable('SYSTEM.ACCESSTOKEN')}` },
+        agent: httpsAgent
       });
     }
   }
@@ -189,6 +200,16 @@ function getCollectionName(collectionUri: string) {
 
 function getFileExtension(fileName: string) {
   return fileName.slice((fileName.lastIndexOf(".") - 1 >>> 0) + 2);
+}
+
+function getTargetBranchName() {
+  let targetBranchName = tl.getVariable('System.PullRequest.TargetBranchName');
+
+  if (!targetBranchName) {
+    targetBranchName = tl.getVariable('System.PullRequest.TargetBranch')?.replace('refs/heads/', '');
+  }
+
+  return `origin/${targetBranchName}`;
 }
 
 run();
