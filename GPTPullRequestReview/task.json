@@ -29,10 +29,10 @@
     {
       "name": "aoi_endpoint",
       "type": "string",
-      "label": "Azure Open API Endpoint",
+      "label": "Azure OpenApi Endpoint",
       "defaultValue": "",
-      "required": true,
-      "helpMarkDown": "Azure Open API Endpoint"
+      "required": false,
+      "helpMarkDown": "Azure OpenApi Endpoint"
     },
     {
       "name": "support_self_signed_certificate",
