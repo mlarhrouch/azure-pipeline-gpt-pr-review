@@ -2,6 +2,7 @@ import tl = require('azure-pipelines-task-lib/task');
 import fetch = require('node-fetch');
 import simpleGit = require('simple-git');
 import binaryExtensions = require('binary-extensions');
+import axios from 'axios';
 const { Configuration, OpenAIApi } = require("openai");
 const https = require("https");
 
@@ -14,6 +15,9 @@ let openai: any;
 let git: simpleGit.SimpleGit;
 let targetBranch: string;
 let httpsAgent: any;
+var apiKey: any;
+var aoi_endpoint: any;
+const DEFAULT_AZURE_OPENAPI_ENDPOINT = 'https://api.openai.com/v1/engines/davinci-codex/completions';
 
 async function run() {
   try {
@@ -23,7 +27,9 @@ async function run() {
     }
 
     const apiKey = tl.getInput('api_key', true);
+    const aoi_endpoint = tl.getInput('aoi_endpoint');
     const supportSelfSignedCertificate = tl.getBoolInput('support_self_signed_certificate');
+
 
     if (apiKey == undefined) {
       tl.setResult(tl.TaskResult.Failed, 'No Api Key provided!');
@@ -32,7 +38,8 @@ async function run() {
 
     const openAiConfiguration = new Configuration({
       apiKey: apiKey,
-    });
+      aoi_endpoint: aoi_endpoint || DEFAULT_AZURE_OPENAPI_ENDPOINT,
+    });    
     
     openai = new OpenAIApi(openAiConfiguration);
 
@@ -93,10 +100,16 @@ async function reviewFile(fileName: string) {
           `;
 
   try {
-    const response = await openai.createCompletion({
-      model: "text-davinci-003",
+    const endpoint = aoi_endpoint || DEFAULT_AZURE_OPENAPI_ENDPOINT;
+
+    const response = await axios.post(endpoint, {
       prompt: prompt,
       max_tokens: 500
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
     });
 
     const choices = response.data.choices
