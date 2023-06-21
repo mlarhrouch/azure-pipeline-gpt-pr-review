@@ -17,6 +17,7 @@ let targetBranch: string;
 let httpsAgent: any;
 var apiKey: any;
 var aoi_endpoint: any;
+const DEFAULT_AZURE_OPENAPI_ENDPOINT = 'https://api.openai.com/v1/engines/davinci-codex/completions';
 
 async function run() {
   try {
@@ -26,23 +27,19 @@ async function run() {
     }
 
     const apiKey = tl.getInput('api_key', true);
-    const aoi_endpoint = tl.getInput('aoi_endpoint', true);
+    const aoi_endpoint = tl.getInput('aoi_endpoint');
     const supportSelfSignedCertificate = tl.getBoolInput('support_self_signed_certificate');
+
 
     if (apiKey == undefined) {
       tl.setResult(tl.TaskResult.Failed, 'No Api Key provided!');
       return;
     }
 
-    if (aoi_endpoint == undefined) {
-      tl.setResult(tl.TaskResult.Failed, 'No Azure open api endpoint provided!');
-      return;
-    }
-
     const openAiConfiguration = new Configuration({
       apiKey: apiKey,
-      aoi_endpoint: aoi_endpoint,
-    });
+      aoi_endpoint: aoi_endpoint || DEFAULT_AZURE_OPENAPI_ENDPOINT,
+    });    
     
     openai = new OpenAIApi(openAiConfiguration);
 
@@ -82,77 +79,30 @@ async function GetChangedFiles(targetBranch: string) {
   return nonBinaryFiles;
 }
 
-// async function reviewFile(fileName: string) {
-//   console.log(`Start reviewing ${fileName} ...`);
-
-//   const patch = await git.diff([targetBranch, '--', fileName]);
-
-//   const prompt = `
-//           Act as a code reviewer of a Pull Request, providing feedback on the code changes below.
-//           You are provided with the Pull Request changes in a patch format.
-//           Each patch entry has the commit message in the Subject line followed by the code changes (diffs) in a unidiff format.
-          
-//           As a code reviewer, your task is:
-//           - Review only added, edited or deleted lines.
-//           - Non changed code should not be reviewed
-//           - If there's no bugs, write 'No feedback'.
-//           - Use bullet points if you have multiple comments.
-          
-//           Patch of the Pull Request to review:
-//           ${patch}
-//           `;
-
-//   try {
-//     const response = await openai.createCompletion({
-//       model: "text-davinci-003",
-//       prompt: prompt,
-//       max_tokens: 500
-//     });
-
-//     const choices = response.data.choices
-
-//     if (choices && choices.length > 0) {
-//       const review = choices[0].text as string
-
-//       if (review.trim() !== "No feedback.") {
-//         await AddCommentToPR(fileName, review);
-//       }
-//     }
-
-//     console.log(`Review of ${fileName} completed.`);
-//   }
-//   catch (error: any) {
-//     if (error.response) {
-//       console.log(error.response.status);
-//       console.log(error.response.data);
-//     } else {
-//       console.log(error.message);
-//     }
-//   }
-// }
-
 async function reviewFile(fileName: string) {
   console.log(`Start reviewing ${fileName} ...`);
 
   const patch = await git.diff([targetBranch, '--', fileName]);
 
   const prompt = `
-    Act as a code reviewer of a Pull Request, providing feedback on the code changes below.
-    You are provided with the Pull Request changes in a patch format.
-    Each patch entry has the commit message in the Subject line followed by the code changes (diffs) in a unidiff format.
-    
-    As a code reviewer, your task is:
-    - Review only added, edited or deleted lines.
-    - Non-changed code should not be reviewed
-    - If there are no bugs, write 'No feedback.'
-    - Use bullet points if you have multiple comments.
-    
-    Patch of the Pull Request to review:
-    ${patch}
-  `;
+          Act as a code reviewer of a Pull Request, providing feedback on the code changes below.
+          You are provided with the Pull Request changes in a patch format.
+          Each patch entry has the commit message in the Subject line followed by the code changes (diffs) in a unidiff format.
+          
+          As a code reviewer, your task is:
+          - Review only added, edited or deleted lines.
+          - Non changed code should not be reviewed
+          - If there's no bugs, write 'No feedback'.
+          - Use bullet points if you have multiple comments.
+          
+          Patch of the Pull Request to review:
+          ${patch}
+          `;
 
   try {
-    const response = await axios.post(aoi_endpoint, {
+    const endpoint = aoi_endpoint || DEFAULT_AZURE_OPENAPI_ENDPOINT;
+
+    const response = await axios.post(endpoint, {
       prompt: prompt,
       max_tokens: 500
     }, {
@@ -162,15 +112,25 @@ async function reviewFile(fileName: string) {
       },
     });
 
-    const review = response.data.choices[0].text as string;
+    const choices = response.data.choices
 
-    if (review.trim() !== 'No feedback.') {
-      await AddCommentToPR(fileName, review);
+    if (choices && choices.length > 0) {
+      const review = choices[0].text as string
+
+      if (review.trim() !== "No feedback.") {
+        await AddCommentToPR(fileName, review);
+      }
     }
 
     console.log(`Review of ${fileName} completed.`);
-  } catch (error: any) {
-    console.log(error.message);
+  }
+  catch (error: any) {
+    if (error.response) {
+      console.log(error.response.status);
+      console.log(error.response.data);
+    } else {
+      console.log(error.message);
+    }
   }
 }
 
