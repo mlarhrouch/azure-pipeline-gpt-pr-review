@@ -13,7 +13,7 @@ let git: simpleGit.SimpleGit;
 let targetBranch: string;
 let httpsAgent: any;
 var apiKey: any;
-var aoi_endpoint: any;
+var openAIEndpoint: any;
 const DEFAULT_OPENAPI_ENDPOINT = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
 
 async function run() {
@@ -25,7 +25,7 @@ async function run() {
 
     const supportSelfSignedCertificate = tl.getBoolInput('support_self_signed_certificate');
     apiKey = tl.getInput('api_key', true);
-    aoi_endpoint = tl.getInput('aoi_endpoint');
+    openAIEndpoint = tl.getInput('custom_oi_endpoint') ?? DEFAULT_OPENAPI_ENDPOINT;
     
     if (apiKey == undefined) {
       tl.setResult(tl.TaskResult.Failed, 'No Api Key provided!');
@@ -89,9 +89,7 @@ async function reviewFile(fileName: string) {
           `;
 
   try {
-    const endpoint = aoi_endpoint || DEFAULT_OPENAPI_ENDPOINT;
-
-    const request = await fetch.default(endpoint, {
+    const request = await fetch.default(openAIEndpoint, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({

@@ -27,12 +27,12 @@
       "helpMarkDown": "Api key of OpenAi."
     },
     {
-      "name": "aoi_endpoint",
+      "name": "custom_oi_endpoint",
       "type": "string",
-      "label": "Azure OpenApi Endpoint",
+      "label": "Custom OpenApi Endpoint",
       "defaultValue": "",
       "required": false,
-      "helpMarkDown": "Azure OpenApi Endpoint"
+      "helpMarkDown": "Custom OpenApi Endpoint, leave empty to use default endpoint. (optional)"
     },
     {
       "name": "support_self_signed_certificate",
