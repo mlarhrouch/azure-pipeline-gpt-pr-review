@@ -3,7 +3,6 @@ import fetch = require('node-fetch');
 import simpleGit = require('simple-git');
 import binaryExtensions = require('binary-extensions');
 import axios from 'axios';
-const { Configuration, OpenAIApi } = require("openai");
 const https = require("https");
 
 const gitOptions: Partial<simpleGit.SimpleGitOptions> = {
@@ -11,13 +10,13 @@ const gitOptions: Partial<simpleGit.SimpleGitOptions> = {
   binary: 'git'
 };
 
-let openai: any;
+// let openai: any;
 let git: simpleGit.SimpleGit;
 let targetBranch: string;
 let httpsAgent: any;
 var apiKey: any;
 var aoi_endpoint: any;
-const DEFAULT_AZURE_OPENAPI_ENDPOINT = 'https://api.openai.com/v1/engines/davinci-codex/completions';
+const DEFAULT_OPENAPI_ENDPOINT = 'https://api.openai.com/v1/engines/davinci-codex/completions';
 
 async function run() {
   try {
@@ -27,7 +26,7 @@ async function run() {
     }
 
     const apiKey = tl.getInput('api_key', true);
-    const aoi_endpoint = tl.getInput('aoi_endpoint');
+    aoi_endpoint = tl.getInput('aoi_endpoint');
     const supportSelfSignedCertificate = tl.getBoolInput('support_self_signed_certificate');
 
 
@@ -35,13 +34,6 @@ async function run() {
       tl.setResult(tl.TaskResult.Failed, 'No Api Key provided!');
       return;
     }
-
-    const openAiConfiguration = new Configuration({
-      apiKey: apiKey,
-      aoi_endpoint: aoi_endpoint || DEFAULT_AZURE_OPENAPI_ENDPOINT,
-    });    
-    
-    openai = new OpenAIApi(openAiConfiguration);
 
     httpsAgent = new https.Agent({
       rejectUnauthorized: !supportSelfSignedCertificate
@@ -100,7 +92,7 @@ async function reviewFile(fileName: string) {
           `;
 
   try {
-    const endpoint = aoi_endpoint || DEFAULT_AZURE_OPENAPI_ENDPOINT;
+    const endpoint = aoi_endpoint || DEFAULT_OPENAPI_ENDPOINT;
 
     const response = await axios.post(endpoint, {
       prompt: prompt,
