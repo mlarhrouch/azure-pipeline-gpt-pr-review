@@ -12,8 +12,8 @@
   "demands": [],
   "version": {
     "Major": "0",
-    "Minor": "8",
-    "Patch": "3"
+    "Minor": "9",
+    "Patch": "11"
   },
   "minimumAgentVersion": "1.95.0",
   "instanceNameFormat": "GPTPullRequestReview $(message)",
@@ -25,6 +25,14 @@
       "defaultValue": "",
       "required": true,
       "helpMarkDown": "Api key of OpenAi."
+    },
+    {
+      "name": "aoi_endpoint",
+      "type": "string",
+      "label": "Azure OpenApi Endpoint",
+      "defaultValue": "",
+      "required": false,
+      "helpMarkDown": "Azure OpenApi Endpoint"
     },
     {
       "name": "support_self_signed_certificate",

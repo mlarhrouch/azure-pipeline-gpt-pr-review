@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "GPTPullRequestReview",
     "name": "GPT Pull Request Review",
-    "version": "0.8.3",
+    "version": "0.9.11",
     "publisher": "mustaphalarhrouch",
     "galleryFlags": [
         "Public",

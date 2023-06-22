@@ -2,7 +2,6 @@ import tl = require('azure-pipelines-task-lib/task');
 import fetch = require('node-fetch');
 import simpleGit = require('simple-git');
 import binaryExtensions = require('binary-extensions');
-const { Configuration, OpenAIApi } = require("openai");
 const https = require("https");
 
 const gitOptions: Partial<simpleGit.SimpleGitOptions> = {
@@ -10,10 +9,12 @@ const gitOptions: Partial<simpleGit.SimpleGitOptions> = {
   binary: 'git'
 };
 
-let openai: any;
 let git: simpleGit.SimpleGit;
 let targetBranch: string;
 let httpsAgent: any;
+var apiKey: any;
+var aoi_endpoint: any;
+const DEFAULT_OPENAPI_ENDPOINT = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
 
 async function run() {
   try {
@@ -22,19 +23,14 @@ async function run() {
       return;
     }
 
-    const apiKey = tl.getInput('api_key', true);
     const supportSelfSignedCertificate = tl.getBoolInput('support_self_signed_certificate');
-
+    apiKey = tl.getInput('api_key', true);
+    aoi_endpoint = tl.getInput('aoi_endpoint');
+    
     if (apiKey == undefined) {
       tl.setResult(tl.TaskResult.Failed, 'No Api Key provided!');
       return;
     }
-
-    const openAiConfiguration = new Configuration({
-      apiKey: apiKey,
-    });
-    
-    openai = new OpenAIApi(openAiConfiguration);
 
     httpsAgent = new https.Agent({
       rejectUnauthorized: !supportSelfSignedCertificate
@@ -93,13 +89,25 @@ async function reviewFile(fileName: string) {
           `;
 
   try {
-    const response = await openai.createCompletion({
-      model: "text-davinci-003",
-      prompt: prompt,
-      max_tokens: 500
+    const endpoint = aoi_endpoint || DEFAULT_OPENAPI_ENDPOINT;
+
+    const request = await fetch.default(endpoint, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt: prompt,
+        max_tokens: 500
+      }),
+      agent: httpsAgent
     });
 
-    const choices = response.data.choices
+    const response = await request.json();
+
+    if (response.error) {
+      throw new Error(response.error.message);
+    }
+
+    const choices = response.choices
 
     if (choices && choices.length > 0) {
       const review = choices[0].text as string
