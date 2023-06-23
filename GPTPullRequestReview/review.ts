@@ -11,9 +11,12 @@ const gitOptions: Partial<simpleGit.SimpleGitOptions> = {
 };
 
 let openai: any;
+let azureOpenai: any;
 let git: simpleGit.SimpleGit;
 let targetBranch: string;
 let httpsAgent: any;
+var apiKey: any;
+var aoiEndpoint: any;
 
 async function run() {
   try {
@@ -22,19 +25,22 @@ async function run() {
       return;
     }
 
-    const apiKey = tl.getInput('api_key', true);
     const supportSelfSignedCertificate = tl.getBoolInput('support_self_signed_certificate');
-
+    apiKey = tl.getInput('api_key', true);
+    aoiEndpoint = tl.getInput('aoi_endpoint');
+    
     if (apiKey == undefined) {
       tl.setResult(tl.TaskResult.Failed, 'No Api Key provided!');
       return;
     }
 
-    const openAiConfiguration = new Configuration({
-      apiKey: apiKey,
-    });
-    
-    openai = new OpenAIApi(openAiConfiguration);
+    if (aoiEndpoint == undefined) {
+      const openAiConfiguration = new Configuration({
+        apiKey: apiKey,
+      });
+      
+      openai = new OpenAIApi(openAiConfiguration);
+    }
 
     httpsAgent = new https.Agent({
       rejectUnauthorized: !supportSelfSignedCertificate
@@ -93,16 +99,38 @@ async function reviewFile(fileName: string) {
           `;
 
   try {
-    const response = await openai.createCompletion({
-      model: "text-davinci-003",
-      prompt: prompt,
-      max_tokens: 500
-    });
+    let choices: any;
 
-    const choices = response.data.choices
+    if (aoiEndpoint == undefined) {
+      const response = await openai.createCompletion({
+        model: "text-davinci-003",
+        prompt: prompt,
+        max_tokens: 500
+      });
+
+      choices = response.data.choices
+    }
+    else {
+      const request = await fetch.default(aoiEndpoint, {
+        method: 'POST',
+        headers: { 'api-key': `${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          max_tokens: 500,
+          messages: [{
+            role: "user",
+            content: prompt
+          }]
+        }),
+        agent: httpsAgent
+      });
+
+      const response = await request.json();
+      
+      choices = response.choices;
+    }
 
     if (choices && choices.length > 0) {
-      const review = choices[0].text as string
+      const review = aoiEndpoint ? choices[0].message?.content : choices[0].text as string
 
       if (review.trim() !== "No feedback.") {
         await AddCommentToPR(fileName, review);

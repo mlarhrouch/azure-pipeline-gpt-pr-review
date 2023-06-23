@@ -30,6 +30,10 @@ Enable the option "Allow scripts to access the OAuth token" in the "Agent job" p
 
 ![allow_access_token](https://github.com/mlarhrouch/azure-pipeline-gpt-pr-review/blob/main/images/allow_access_token.png?raw=true)
 
+### Azure Open AI service
+
+If you choose to use the Azure Open AI service, you must fill in the endpoint and API key of Azure OpenAI. The format of the endpoint is as follows: https://{XXXXXXXX}.openai.azure.com/openai/deployments/{MODEL_NAME}/chat/completions?api-version={API_VERSION}
+
 ## How to use it
 
 ### Install the extension
