@@ -2,6 +2,7 @@ import tl = require('azure-pipelines-task-lib/task');
 import fetch = require('node-fetch');
 import simpleGit = require('simple-git');
 import binaryExtensions = require('binary-extensions');
+const { Configuration, OpenAIApi } = require("openai");
 const https = require("https");
 
 const gitOptions: Partial<simpleGit.SimpleGitOptions> = {
@@ -9,12 +10,13 @@ const gitOptions: Partial<simpleGit.SimpleGitOptions> = {
   binary: 'git'
 };
 
+let openai: any;
+let azureOpenai: any;
 let git: simpleGit.SimpleGit;
 let targetBranch: string;
 let httpsAgent: any;
 var apiKey: any;
-var openAIEndpoint: any;
-const DEFAULT_OPENAPI_ENDPOINT = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
+var aoiEndpoint: any;
 
 async function run() {
   try {
@@ -25,11 +27,19 @@ async function run() {
 
     const supportSelfSignedCertificate = tl.getBoolInput('support_self_signed_certificate');
     apiKey = tl.getInput('api_key', true);
-    openAIEndpoint = tl.getInput('custom_oi_endpoint') ?? DEFAULT_OPENAPI_ENDPOINT;
+    aoiEndpoint = tl.getInput('aoi_endpoint');
     
     if (apiKey == undefined) {
       tl.setResult(tl.TaskResult.Failed, 'No Api Key provided!');
       return;
+    }
+
+    if (aoiEndpoint == undefined) {
+      const openAiConfiguration = new Configuration({
+        apiKey: apiKey,
+      });
+      
+      openai = new OpenAIApi(openAiConfiguration);
     }
 
     httpsAgent = new https.Agent({
@@ -89,26 +99,38 @@ async function reviewFile(fileName: string) {
           `;
 
   try {
-    const request = await fetch.default(openAIEndpoint, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    let choices: any;
+
+    if (aoiEndpoint == undefined) {
+      const response = await openai.createCompletion({
+        model: "text-davinci-003",
         prompt: prompt,
         max_tokens: 500
-      }),
-      agent: httpsAgent
-    });
+      });
 
-    const response = await request.json();
+      choices = response.data.choices
+    }
+    else {
+      const request = await fetch.default(aoiEndpoint, {
+        method: 'POST',
+        headers: { 'api-key': `${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          max_tokens: 500,
+          messages: [{
+            role: "user",
+            content: prompt
+          }]
+        }),
+        agent: httpsAgent
+      });
 
-    if (response.error) {
-      throw new Error(response.error.message);
+      const response = await request.json();
+      
+      choices = response.choices;
     }
 
-    const choices = response.choices
-
     if (choices && choices.length > 0) {
-      const review = choices[0].text as string
+      const review = aoiEndpoint ? choices[0].message?.content : choices[0].text as string
 
       if (review.trim() !== "No feedback.") {
         await AddCommentToPR(fileName, review);
