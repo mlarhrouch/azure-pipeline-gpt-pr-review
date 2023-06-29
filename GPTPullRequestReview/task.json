@@ -12,8 +12,8 @@
   "demands": [],
   "version": {
     "Major": "0",
-    "Minor": "9",
-    "Patch": "18"
+    "Minor": "10",
+    "Patch": "2"
   },
   "minimumAgentVersion": "1.95.0",
   "instanceNameFormat": "GPTPullRequestReview $(message)",
@@ -45,7 +45,7 @@
   ],
   "execution": {
     "Node10": {
-      "target": "review.js"
+      "target": "dist/index.js"
     }
   }
 }
