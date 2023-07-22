@@ -6,12 +6,6 @@ import { getTargetBranchName } from './utils';
 import { getChangedFiles } from './git';
 import https from 'https';
 
-let openai: OpenAIApi;
-let targetBranch: string;
-let httpsAgent: any;
-let apiKey: string | undefined;
-let aoiEndpoint: string | undefined;
-
 async function run() {
   try {
     if (tl.getVariable('Build.Reason') !== 'PullRequest') {
@@ -19,9 +13,10 @@ async function run() {
       return;
     }
 
+    let openai: OpenAIApi | undefined;
     const supportSelfSignedCertificate = tl.getBoolInput('support_self_signed_certificate');
-    apiKey = tl.getInput('api_key', true);
-    aoiEndpoint = tl.getInput('aoi_endpoint');
+    const apiKey = tl.getInput('api_key', true);
+    const aoiEndpoint = tl.getInput('aoi_endpoint');
 
     if (apiKey == undefined) {
       tl.setResult(tl.TaskResult.Failed, 'No Api Key provided!');
@@ -36,11 +31,16 @@ async function run() {
       openai = new OpenAIApi(openAiConfiguration);
     }
 
-    httpsAgent = new https.Agent({
+    const httpsAgent = new https.Agent({
       rejectUnauthorized: !supportSelfSignedCertificate
     });
 
-    targetBranch = getTargetBranchName();
+    let targetBranch = getTargetBranchName();
+
+    if (!targetBranch) {
+      tl.setResult(tl.TaskResult.Failed, 'No target branch found!');
+      return;
+    }
 
     const filesNames = await getChangedFiles(targetBranch);
 

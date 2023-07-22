@@ -4,7 +4,7 @@ import { OpenAIApi } from 'openai';
 import { addCommentToPR } from './pr';
 import { Agent } from 'https';
 
-export async function reviewFile(targetBranch: string, fileName: string, httpsAgent: Agent, apiKey: string, openai: OpenAIApi, aoiEndpoint: string | undefined) {
+export async function reviewFile(targetBranch: string, fileName: string, httpsAgent: Agent, apiKey: string, openai: OpenAIApi | undefined, aoiEndpoint: string | undefined) {
   console.log(`Start reviewing ${fileName} ...`);
 
   const patch = await git.diff([targetBranch, '--', fileName]);
@@ -27,7 +27,7 @@ export async function reviewFile(targetBranch: string, fileName: string, httpsAg
   try {
     let choices: any;
 
-    if (aoiEndpoint == undefined) {
+    if (openai) {
       const response = await openai.createCompletion({
         model: "text-davinci-003",
         prompt: prompt,
@@ -36,7 +36,7 @@ export async function reviewFile(targetBranch: string, fileName: string, httpsAg
 
       choices = response.data.choices
     }
-    else {
+    else if (aoiEndpoint) {
       const request = await fetch(aoiEndpoint, {
         method: 'POST',
         headers: { 'api-key': `${apiKey}`, 'Content-Type': 'application/json' },

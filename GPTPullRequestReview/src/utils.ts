@@ -11,5 +11,9 @@ export function getTargetBranchName() {
     targetBranchName = tl.getVariable('System.PullRequest.TargetBranch')?.replace('refs/heads/', '');
   }
 
+  if (!targetBranchName) {
+    return undefined;
+  }
+
   return `origin/${targetBranchName}`;
 }
