@@ -15,7 +15,7 @@ export async function getChangedFiles(targetBranch: string) {
   await git.addConfig('core.quotepath', 'false');
   await git.fetch();
 
-  const diffs = await git.diff([targetBranch, '--name-only']);
+  const diffs = await git.diff([targetBranch, '--name-only', '--diff-filter=AM']);
   const files = diffs.split('\n').filter(line => line.trim().length > 0);
   const nonBinaryFiles = files.filter(file => !binaryExtensions.includes(getFileExtension(file)));
 
