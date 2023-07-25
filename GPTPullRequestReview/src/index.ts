@@ -3,7 +3,7 @@ import { Configuration, OpenAIApi } from 'openai';
 import { deleteExistingComments } from './pr';
 import { reviewFile } from './review';
 import { getTargetBranchName } from './utils';
-import { getChangedFiles } from './git';
+import { getChangedFiles, initializeGit } from './git';
 import https from 'https';
 
 async function run() {
@@ -17,6 +17,7 @@ async function run() {
     const supportSelfSignedCertificate = tl.getBoolInput('support_self_signed_certificate');
     const apiKey = tl.getInput('api_key', true);
     const aoiEndpoint = tl.getInput('aoi_endpoint');
+    const workingDir = tl.getInput('working_dir');
 
     if (apiKey == undefined) {
       tl.setResult(tl.TaskResult.Failed, 'No Api Key provided!');
@@ -31,6 +32,8 @@ async function run() {
       openai = new OpenAIApi(openAiConfiguration);
     }
 
+    const git = initializeGit(workingDir ?? tl.getVariable('System.DefaultWorkingDirectory') as string);
+
     const httpsAgent = new https.Agent({
       rejectUnauthorized: !supportSelfSignedCertificate
     });
@@ -42,12 +45,12 @@ async function run() {
       return;
     }
 
-    const filesNames = await getChangedFiles(targetBranch);
+    const filesNames = await getChangedFiles(git, targetBranch);
 
     await deleteExistingComments(httpsAgent);
 
     for (const fileName of filesNames) {
-      await reviewFile(targetBranch, fileName, httpsAgent, apiKey, openai, aoiEndpoint)
+      await reviewFile(git, targetBranch, fileName, httpsAgent, apiKey, openai, aoiEndpoint)
     }
 
     tl.setResult(tl.TaskResult.Succeeded, "Pull Request reviewed.");
