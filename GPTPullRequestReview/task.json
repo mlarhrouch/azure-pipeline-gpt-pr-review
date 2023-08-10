@@ -41,6 +41,31 @@
       "defaultValue": "false",
       "required": false,
       "helpMarkDown": "Select this option to support self-signed certificate."
+    },
+    {
+      "name": "prompt_instructions",
+      "type": "string",
+      "label": "prompt instructions for auto the code review",
+      "defaultValue": "Act as a code reviewer of a Pull Request, providing feedback on the code changes below.
+            You are provided with the Pull Request changes in a patch format.
+            Each patch entry has the commit message in the Subject line followed by the code changes (diffs) in a unidiff format.",
+      "required": true,
+      "helpMarkDown": "use to set instructions for your reviewer will be injected into your system prompt"
+    },
+    {
+      "name": "model",
+      "type": "string",
+      "label": "OpenAI model name",
+      "defaultValue": "gpt-3.5-turbo",
+      "required": true,
+      "helpMarkDown": "use to set the model to use"
+    }, {
+      "name": "max_token",
+      "type": "number",
+      "label": "OpenAI Token Max Length",
+      "defaultValue": 500,
+      "required": true,
+      "helpMarkDown": "use to set the max length for a result"
     }
   ],
   "execution": {
