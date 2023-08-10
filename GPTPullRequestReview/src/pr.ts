@@ -8,7 +8,15 @@ export async function addCommentToPR(fileName: string, comment: string, httpsAge
       {
         parentCommentId: 0,
         content: comment,
-        commentType: 1
+        commentType: 1,
+        startPosition: {
+          line: 1,
+          character: 1
+        },
+        endPosition: {
+          line: 1,
+          character: 1
+        }
       }
     ],
     status: 1,

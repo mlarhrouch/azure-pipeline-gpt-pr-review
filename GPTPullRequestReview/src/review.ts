@@ -9,10 +9,8 @@ export async function reviewFile(targetBranch: string, fileName: string, httpsAg
 
   const patch = await git.diff([targetBranch, '--', fileName]);
 
-  const prompt = `
-            Act as a code reviewer of a Pull Request, providing feedback on the code changes below.
-            You are provided with the Pull Request changes in a patch format.
-            Each patch entry has the commit message in the Subject line followed by the code changes (diffs) in a unidiff format.
+  const prompt = 
+            tl.getInput('prompt_instructions') + `
             
             As a code reviewer, your task is:
             - Review only added, edited or deleted lines.
@@ -29,9 +27,17 @@ export async function reviewFile(targetBranch: string, fileName: string, httpsAg
 
     if (openai) {
       const response = await openai.createCompletion({
-        model: "text-davinci-003",
-        prompt: prompt,
-        max_tokens: 500
+        model: tl.getInput('model') || 'gpt-3.5-turbo',
+        messages: [
+          {
+            "role": "system",
+            "content": instructions
+          },
+          {
+            role: "user",
+            content: prompt
+          }],
+        max_tokens: parseInt(tl.getInput('max_tokens') || '500', 10)
       });
 
       choices = response.data.choices
@@ -41,11 +47,16 @@ export async function reviewFile(targetBranch: string, fileName: string, httpsAg
         method: 'POST',
         headers: { 'api-key': `${apiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          max_tokens: 500,
-          messages: [{
-            role: "user",
-            content: prompt
-          }]
+          max_tokens: parseInt(tl.getInput('max_tokens') || '500', 10),
+          messages: [
+            {
+              "role": "system",
+              "content": instructions
+            },
+            {
+              role: "user",
+              content: prompt
+            }]
         })
       });
 
@@ -57,8 +68,8 @@ export async function reviewFile(targetBranch: string, fileName: string, httpsAg
     if (choices && choices.length > 0) {
       const review = aoiEndpoint ? choices[0].message?.content : choices[0].text as string
 
-      if (review.trim() !== "No feedback.") {
-        await addCommentToPR(fileName, review, httpsAgent);
+      if (!review.replace(/^[\s\-]+/g, '').trim().toLowerCase().startsWith("no feedback")) {
+        await addCommentToPR('/' + fileName, review, httpsAgent);
       }
     }
 
