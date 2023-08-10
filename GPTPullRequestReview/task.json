@@ -52,10 +52,16 @@
     },
     {
       "name": "model",
-      "type": "string",
-      "label": "OpenAI model name",
+      "type": "pickList",
+      "label": "OpenAI model",
       "defaultValue": "gpt-3.5-turbo",
       "required": true,
+      "options": {
+        "gpt-3.5-turbo": "GPT 3.5 Turbo",
+        "gpt-4": "GPT 4",
+        "gpt-3.5-turbo-16k": "GPT 3.5 Turbo 16k",
+        "text-davinci-003": "Davinci"
+      },
       "helpMarkDown": "use to set the model to use"
     }, {
       "name": "max_token",
