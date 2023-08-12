@@ -12,8 +12,8 @@
   "demands": [],
   "version": {
     "Major": "0",
-    "Minor": "11",
-    "Patch": "0"
+    "Minor": "12",
+    "Patch": "2"
   },
   "minimumAgentVersion": "1.95.0",
   "instanceNameFormat": "GPTPullRequestReview $(message)",
@@ -25,6 +25,19 @@
       "defaultValue": "",
       "required": true,
       "helpMarkDown": "Api key of OpenAi or Azure OpenAI."
+    },
+    {
+      "name": "model",
+      "type": "pickList",
+      "label": "OpenAI model",
+      "required": false,
+      "options": {
+        "": "",
+        "gpt-4": "GPT 4",
+        "gpt-3.5-turbo": "GPT 3.5 Turbo",
+        "gpt-3.5-turbo-16k": "GPT 3.5 Turbo 16k"
+      },
+      "helpMarkDown": "The OpenAI model to use. not used if you use Azure OpenAI. if no model is selected, the GPT 3.5 Turbo model is used."
     },
     {
       "name": "aoi_endpoint",
