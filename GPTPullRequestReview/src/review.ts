@@ -9,17 +9,16 @@ export async function reviewFile(targetBranch: string, fileName: string, httpsAg
 
   const patch = await git.diff([targetBranch, '--', fileName]);
 
-  const prompt = 
-            tl.getInput('prompt_instructions') + `
-            
-            As a code reviewer, your task is:
-            - Review only added, edited or deleted lines.
-            - Non changed code should not be reviewed
-            - If there's no bugs, write 'No feedback'.
-            - Use bullet points if you have multiple comments.
-            
+  const instructions = tl.getInput('prompt_instructions') + `
+   As a code reviewer, your task is:
+  - Review only added, edited or deleted lines.
+  - Non changed code should not be reviewed
+  - If there's no bugs, write 'No feedback'.
+  - Use bullet points if you have multiple comments.`;
+
+  const prompt = `
             Patch of the Pull Request to review:
-            ${patch}
+             ${patch}
             `;
 
   try {

@@ -63,7 +63,8 @@
         "text-davinci-003": "Davinci"
       },
       "helpMarkDown": "use to set the model to use"
-    }, {
+    },
+    {
       "name": "max_token",
       "type": "number",
       "label": "OpenAI Token Max Length",
