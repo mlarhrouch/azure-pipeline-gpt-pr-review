@@ -17,6 +17,7 @@ async function run() {
     const supportSelfSignedCertificate = tl.getBoolInput('support_self_signed_certificate');
     const apiKey = tl.getInput('api_key', true);
     const aoiEndpoint = tl.getInput('aoi_endpoint');
+    const ignoreFormatting = tl.getBoolInput('ignore_formatting');
 
     if (apiKey == undefined) {
       tl.setResult(tl.TaskResult.Failed, 'No Api Key provided!');
@@ -47,7 +48,7 @@ async function run() {
     await deleteExistingComments(httpsAgent);
 
     for (const fileName of filesNames) {
-      await reviewFile(targetBranch, fileName, httpsAgent, apiKey, openai, aoiEndpoint)
+      await reviewFile(targetBranch, fileName, httpsAgent, apiKey, openai, aoiEndpoint, ignoreFormatting)
     }
 
     tl.setResult(tl.TaskResult.Succeeded, "Pull Request reviewed.");

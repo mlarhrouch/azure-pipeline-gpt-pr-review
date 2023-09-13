@@ -5,20 +5,20 @@ import { addCommentToPR } from './pr';
 import { Agent } from 'https';
 import * as tl from "azure-pipelines-task-lib/task";
 
-export async function reviewFile(targetBranch: string, fileName: string, httpsAgent: Agent, apiKey: string, openai: OpenAIApi | undefined, aoiEndpoint: string | undefined) {
+export async function reviewFile(targetBranch: string, fileName: string, httpsAgent: Agent, apiKey: string, openai: OpenAIApi | undefined, aoiEndpoint: string | undefined, ignoreFormatting: boolean | undefined) {
   console.log(`Start reviewing ${fileName} ...`);
 
   const defaultOpenAIModel = 'gpt-3.5-turbo';
   const patch = await git.diff([targetBranch, '--', fileName]);
-
-  const instructions = `Act as a code reviewer of a Pull Request, providing feedback on possible bugs and clean code issues.
-        You are provided with the Pull Request changes in a patch format.
-        Each patch entry has the commit message in the Subject line followed by the code changes (diffs) in a unidiff format.
-
-        As a code reviewer, your task is:
-                - Review only added, edited or deleted lines.
-                - If there's no bugs and the changes are correct, write only 'No feedback.'
-                - If there's bug or uncorrect code changes, don't write 'No feedback.'`;
+  const minor = ignoreFormatting ? 'c) Minor (stylistic issues)' : 'Note: Ignore styling, formatting and spaces';
+  const instructions = `As a PR reviewer, your role is key for code quality. \
+    Each patch entry has the commit message in the Subject line followed by the code changes (diffs) in a unidiff format. \
+    Only focus on changed lines. Classify feedback as: \
+    a) Critical (syntax, logic errors) \
+    b) Major (inefficiency, standard violations) \
+    ${minor} \
+    Offer actionable, specific comments in the PR review. \
+    If no issues, state 'No feedback.'`;
 
   try {
     let choices: any;
