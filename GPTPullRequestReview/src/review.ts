@@ -20,8 +20,6 @@ export async function reviewFile(targetBranch: string, fileName: string, httpsAg
     Offer actionable, specific comments in the PR review. \
     If no issues, state 'No feedback.'`;
 
-  console.log(instructions);
-
   try {
     let choices: any;
 
