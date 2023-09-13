@@ -54,6 +54,14 @@
       "defaultValue": "false",
       "required": false,
       "helpMarkDown": "Select this option to support self-signed certificate."
+    },
+    {
+      "name": "ignore_formatting",
+      "type": "boolean",
+      "label": "Ignore formatting and spacing",
+      "defaultValue": "false",
+      "required": false,
+      "helpMarkDown": "Select this option to ignore formatting and spacing (e.g. if you already have a .editorconfig)"
     }
   ],
   "execution": {
