@@ -5,6 +5,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+*.log.*
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
@@ -69,16 +70,13 @@ typings/
 .yarn-integrity
 
 # dotenv environment variables file
-.env
-.env.test
+.env*
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 
-# Next.js build output
+# Next.js/Next.js build output
 .next
-
-# Nuxt.js build / generate output
 .nuxt
 dist
 
@@ -100,13 +98,23 @@ dist
 # DynamoDB Local files
 .dynamodb/
 
+# IDE files
+*.vsix
+.idea
+.vscode
+.c9
+.swp
+.sublime
+
+# OS generated files
+**/.DS_Store
+Thumbs.db
+Desktop.ini
+
 # TernJS port file
 .tern-port
 
-.taskkey
-
-**/.DS_Store
-
-*.vsix
-
+# Uncategorized or To Be Classified
+# The purpose of the following files is not yet documented.
 *.js
+.taskkey
