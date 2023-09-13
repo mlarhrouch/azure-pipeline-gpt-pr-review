@@ -10,13 +10,13 @@ export async function reviewFile(targetBranch: string, fileName: string, httpsAg
 
   const defaultOpenAIModel = 'gpt-3.5-turbo';
   const patch = await git.diff([targetBranch, '--', fileName]);
-  const minor = ignoreFormatting ? 'Minor (stylistic issues)' : 'Ignore styling, formatting and spaces';
+  const minor = ignoreFormatting ? 'c) Minor (stylistic issues)' : 'Note: Ignore styling, formatting and spaces';
   const instructions = `As a PR reviewer, your role is key for code quality. \
-    Patches come with a 'Subject' as the commit message and code diffs in unidiff format. \
+    Each patch entry has the commit message in the Subject line followed by the code changes (diffs) in a unidiff format. \
     Only focus on changed lines. Classify feedback as: \
-    a) Critical (syntax, logic errors), \
-    b) Major (inefficiency, standard violations), \
-    c) ${minor}. \
+    a) Critical (syntax, logic errors) \
+    b) Major (inefficiency, standard violations) \
+    ${minor} \
     Offer actionable, specific comments in the PR review. \
     If no issues, state 'No feedback.' \
     Adhere to these guidelines to maintain code quality.`;
