@@ -61,7 +61,7 @@
       "label": "Ignore formatting and spacing",
       "defaultValue": "false",
       "required": false,
-      "helpMarkDown": "Select this option to ignore formatting and spacing (e.g. if you already have a .editorconfig)"
+      "helpMarkDown": "Select this option to ignore formatting and spacing (e.g. if you already have an .editorconfig)"
     }
   ],
   "execution": {
