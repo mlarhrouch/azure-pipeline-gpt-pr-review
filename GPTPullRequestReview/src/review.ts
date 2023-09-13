@@ -18,8 +18,7 @@ export async function reviewFile(targetBranch: string, fileName: string, httpsAg
     b) Major (inefficiency, standard violations) \
     ${minor} \
     Offer actionable, specific comments in the PR review. \
-    If no issues, state 'No feedback.' \
-    Adhere to these guidelines to maintain code quality.`;
+    If no issues, state 'No feedback.'`;
 
   console.log(instructions);
 
